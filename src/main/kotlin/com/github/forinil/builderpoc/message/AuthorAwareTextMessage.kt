@@ -1,20 +1,27 @@
 package com.github.forinil.builderpoc.message
 
 class AuthorAwareTextMessage private constructor(val author: String, message: String, type: Type): TextMessage(message, type) {
-    class Builder: TextMessage.Builder() {
+    open class Builder<B: Builder<B>>: TextMessage.Builder<B>() {
         private var author = ""
 
-        override fun self(): Builder {
-            return this
+        @Suppress("UNCHECKED_CAST")
+        override fun self(): B {
+            return this as B
         }
 
         override fun build(): AuthorAwareTextMessage {
             return AuthorAwareTextMessage(author, message, type)
         }
 
-        fun author(value: String): Builder {
+        fun author(value: String): B {
             author = value
             return self()
+        }
+    }
+
+    class ConcreteBuilder private constructor(): Builder<ConcreteBuilder>() {
+        companion object {
+            fun new() =  ConcreteBuilder()
         }
     }
 
@@ -23,8 +30,8 @@ class AuthorAwareTextMessage private constructor(val author: String, message: St
     }
 
     companion object {
-        fun newBuilder(): Builder {
-            return Builder()
+        fun newBuilder(): ConcreteBuilder {
+            return ConcreteBuilder.new()
         }
     }
 }
